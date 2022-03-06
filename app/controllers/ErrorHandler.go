@@ -5,8 +5,13 @@ import (
 	"net/http"
 )
 
-func handleError(ctx *gin.Context, err error) {
+func handleError(ctx *gin.Context, err error) bool {
 	if err != nil {
-		ctx.AbortWithError(http.StatusBadRequest, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		ctx.Abort()
+		return true
 	}
+	return false
 }

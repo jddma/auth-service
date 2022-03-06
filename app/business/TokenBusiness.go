@@ -3,9 +3,11 @@ package business
 import (
 	"auth-service/app/DTOs"
 	"auth-service/app/util"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"strings"
 )
 
 func GenerateTokenBusiness(ctx *gin.Context, generateTokenRequestDTO DTOs.GenerateTokenRequestDTO) {
@@ -16,8 +18,13 @@ func GenerateTokenBusiness(ctx *gin.Context, generateTokenRequestDTO DTOs.Genera
 	ctx.JSON(http.StatusOK, generateTokenResponseDTO)
 }
 
-func ValidateTokenBusiness(ctx *gin.Context, validateTokenRequestDTO DTOs.TokenDTO) {
-	if util.ValidateToken(validateTokenRequestDTO.Token) {
+func ValidateTokenBusiness(ctx *gin.Context, headersDTO DTOs.HeadersWithIdentityDTO) {
+	tokenArray := strings.Split(headersDTO.Token, "Bearer ")
+	if len(tokenArray) != 2 {
+		ctx.AbortWithError(http.StatusBadRequest, errors.New("Header Authorization invalid"))
+		return
+	}
+	if util.ValidateToken(tokenArray[1]) {
 		ctx.Status(http.StatusOK)
 	} else {
 		ctx.Status(http.StatusUnauthorized)

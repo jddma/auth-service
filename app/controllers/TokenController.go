@@ -9,19 +9,27 @@ import (
 )
 
 func GenerateTokenController(ctx *gin.Context) {
+	headersDTO, err := getAnonymousHeaders(ctx)
+	if handleError(ctx, err) {
+		return
+	}
 	generateTokenRequestDTO := new(DTOs.GenerateTokenRequestDTO)
-	err := ctx.Bind(generateTokenRequestDTO)
-	handleError(ctx, err)
+	err = ctx.ShouldBindJSON(generateTokenRequestDTO)
+	if handleError(ctx, err) {
+		return
+	}
 
-	log.Printf("Objeto request GenerateTokenController -> %s", util.DtoToJson(generateTokenRequestDTO))
+	log.Printf("Objeto request GenerateTokenController body -> %s, headers -> %s",
+		util.DtoToJson(generateTokenRequestDTO), util.DtoToJson(headersDTO))
 	business.GenerateTokenBusiness(ctx, *generateTokenRequestDTO)
 }
 
 func ValidateTokenController(ctx *gin.Context) {
-	validateTokenRequestDTO := new(DTOs.TokenDTO)
-	err := ctx.Bind(validateTokenRequestDTO)
-	handleError(ctx, err)
+	headersDTO, err := getHeadersWithIdentityDTO(ctx)
+	if handleError(ctx, err) {
+		return
+	}
 
-	log.Printf("Objeto request ValidateTokenController -> %s", util.DtoToJson(validateTokenRequestDTO))
-	business.ValidateTokenBusiness(ctx, *validateTokenRequestDTO)
+	log.Printf("Headers request ValidateTokenController -> %s", util.DtoToJson(headersDTO))
+	business.ValidateTokenBusiness(ctx, *headersDTO)
 }
