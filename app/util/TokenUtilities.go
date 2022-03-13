@@ -1,6 +1,7 @@
 package util
 
 import (
+	"auth-service/app/model"
 	"github.com/dgrijalva/jwt-go"
 	"log"
 	"os"
@@ -8,8 +9,9 @@ import (
 )
 
 type authCustomClaims struct {
-	IdUser int `json:"idUser""`
-	IdRole int `json:"idRole"`
+	IdUser   int            `json:"idUser""`
+	IdRole   int            `json:"idRole"`
+	Accesses []model.Access `json:"accesses"`
 	jwt.StandardClaims
 }
 
@@ -17,10 +19,11 @@ func getSecretKey() string {
 	return os.Getenv("token_secret_key")
 }
 
-func GenerateToken(idUser int, idRole int) string {
+func GenerateToken(idUser int, idRole int, accesess []model.Access) string {
 	claims := &authCustomClaims{
 		idUser,
 		idRole,
+		accesess,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 1).Unix(),
 			Issuer:    "Service",

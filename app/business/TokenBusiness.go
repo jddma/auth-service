@@ -2,6 +2,7 @@ package business
 
 import (
 	"auth-service/app/DTOs"
+	"auth-service/app/repository"
 	"auth-service/app/util"
 	"errors"
 	"github.com/gin-gonic/gin"
@@ -11,7 +12,14 @@ import (
 )
 
 func GenerateTokenBusiness(ctx *gin.Context, generateTokenRequestDTO DTOs.GenerateTokenRequestDTO) {
-	token := util.GenerateToken(generateTokenRequestDTO.IdUser, generateTokenRequestDTO.IdRole)
+	accesses, err := repository.FindAccessRoleByIdRole(generateTokenRequestDTO.IdRole)
+	if validateConnectionWithDatabase(ctx, err) {
+		return
+	}
+	log.Printf("Accesos concdidos para id role # %d -> %s", generateTokenRequestDTO.IdRole,
+		util.DtoToJson(accesses))
+
+	token := util.GenerateToken(generateTokenRequestDTO.IdUser, generateTokenRequestDTO.IdRole, accesses)
 	generateTokenResponseDTO := DTOs.NewGenerateTokenResponseDTO(token)
 
 	log.Printf("Objeto respuesta GenerateTokenBusiness -> %s", util.DtoToJson(generateTokenResponseDTO))
